@@ -42,7 +42,7 @@ multiboot_init:
 	ldr	sp, =k_initial_stktop
 	mov	r1, #0
 	push	{r1}			/* Terminate stack */
-	ldr	r2, =_C_LABEL(kmain)	/* r0 holds kinfo_t ptr */
+	ldr	r2, =_C_LABEL(__k_unpaged_kmain)	/* r0 holds kinfo_t ptr */
 	bx	r2
 
 	/* not reached */

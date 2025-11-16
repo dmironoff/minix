@@ -2,7 +2,7 @@
 #
 # Perform a checkout / update the MINIX u-boot git repo if needed
 # 
-: ${UBOOT_REPO_URL=git://git.minix3.org/u-boot}
+: ${UBOOT_REPO_URL=https://github.com/Stichting-MINIX-Research-Foundation/u-boot}
 
 # -o output dir
 OUTPUT_DIR=""

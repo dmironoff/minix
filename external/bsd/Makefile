@@ -6,7 +6,7 @@
 SUBDIR=	bind byacc dhcpcd \
 	fetch file flex less \
 	libarchive libevent libpcap mdocml \
-	openresolv tcpdump tmux top
+	openresolv tcpdump tmux top libfdt
 
 .if (${MKATF} != "no")
 SUBDIR+= atf

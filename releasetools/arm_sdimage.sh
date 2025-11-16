@@ -24,7 +24,7 @@ fi
 : ${TOOLCHAIN_TRIPLET=arm-elf32-minix-}
 : ${BUILDSH=build.sh}
 
-: ${SETS="minix-base minix-comp minix-games minix-man minix-tests tests"}
+: ${SETS="minix-base"}
 : ${IMG=minix_arm_sd.img}
 
 # ARM definitions:
@@ -34,12 +34,12 @@ fi
 : ${FAT_SIZE=$((    10*(2**20) / 512))} # This is in sectors
 
 # Beagleboard-xm
-: ${U_BOOT_BIN_DIR=build/omap3_beagle/}
-: ${CONSOLE=tty02}
+#: ${U_BOOT_BIN_DIR=build/omap3_beagle/}
+#: ${CONSOLE=tty02}
 
 # BeagleBone (and black)
-#: ${U_BOOT_BIN_DIR=build/am335x_evm/}
-#: ${CONSOLE=tty00}
+: ${U_BOOT_BIN_DIR=build/am335x_evm/}
+: ${CONSOLE=tty00}
 
 #
 # We host u-boot binaries.

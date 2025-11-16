@@ -19,6 +19,8 @@
 struct tss_s tss[CONFIG_MAX_CPUS];
 extern int exc_vector_table;
 
+extern void setup_our_pagedir (void);
+
 int prot_init_done = 0;
 
 phys_bytes vir2phys(void *vir)
@@ -83,8 +85,8 @@ void prot_init(void)
 	 * we can map in VM, and we no longer rely on pre-relocated
 	 * data.
 	 */
-
-	pg_clear();
+    setup_our_pagedir();
+    pg_clear();
 	pg_identity(&kinfo); /* Still need 1:1 for device memory . */
 	pg_mapkernel();
 	pg_load();

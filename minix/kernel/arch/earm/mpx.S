@@ -269,7 +269,7 @@ ENTRY(restore_user_context)
 .balign 4
 k_initial_stack:
 .space	K_STACK_SIZE
-LABEL(__k_unpaged_k_initial_stktop)
+LABEL(k_initial_stktop)
 
 /*
  * the kernel stack

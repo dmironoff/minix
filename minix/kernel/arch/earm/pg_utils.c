@@ -19,7 +19,17 @@ static phys_bytes kern_phys_start = (phys_bytes) &_kern_phys_base;
 static phys_bytes kern_kernlen = (phys_bytes) &_kern_size;
 
 /* page directory we can use to map things */
-static u32_t pagedir[4096]  __aligned(16384);
+static u32_t *pagedir;
+
+static u32_t ownpagedir[4096]  __aligned(16384);
+
+void find_exists_pagedir (void) {
+    pagedir = (u32_t *) read_ttbr0();
+}
+
+void setup_our_pagedir (void) {
+    pagedir = &ownpagedir[0];
+}
 
 void print_memmap(kinfo_t *cbi)
 {

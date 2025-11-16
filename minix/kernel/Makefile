@@ -17,6 +17,10 @@ SRCS+=	clock.c cpulocals.c interrupt.c main.c proc.c system.c \
 
 LDADD+=	-ltimers -lsys -lexec 
 
+.if ${MACHINE_ARCH} == "earm"
+LDADD+=	-lfdt
+.endif
+
 LINKERSCRIPT= ${.CURDIR}/arch/${MACHINE_ARCH}/kernel.lds
 
 .if ${HAVE_GOLD:U} != ""

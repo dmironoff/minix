@@ -1,5 +1,3 @@
-#define UNPAGED 1	/* for proper kmain() prototype */
-
 #include "kernel/kernel.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -26,9 +24,6 @@
 kinfo_t kinfo;
 struct kmessages kmessages;
 
-/* pg_utils.c uses this; in this phase, there is a 1:1 mapping. */
-phys_bytes vir2phys(void *addr) { return (phys_bytes) addr; }
-
 static void setup_mbi(multiboot_info_t *mbi, char *bootargs);
 
 /* String length used for mb_itoa */
@@ -41,9 +36,7 @@ int kernel_may_alloc = 1;
 extern u32_t _edata;
 extern u32_t _end;
 
-/* kernel unpaged bss */
-extern char _kern_unpaged_edata;
-extern char _kern_unpaged_end;
+extern void find_exists_pagedir (void);
 
 /**
  *
@@ -221,8 +214,7 @@ void get_parameters(kinfo_t *cbi, char *bootargs)
 	multiboot_info_t *mbi = &cbi->mbi;
 	int var_i,value_i, m, k;
 	char *p;
-	extern char _kern_phys_base, _kern_vir_base, _kern_size,
-	    _kern_unpaged_start, _kern_unpaged_end;
+	extern char _kern_phys_base, _kern_vir_base, _kern_size;
 	phys_bytes kernbase = (phys_bytes) &_kern_phys_base,
 	    kernsize = (phys_bytes) &_kern_size;
 #define BUF 1024
@@ -235,9 +227,8 @@ void get_parameters(kinfo_t *cbi, char *bootargs)
 	cbi->mem_high_phys = 0;
 	cbi->user_sp = (vir_bytes) &_kern_vir_base;
 	cbi->vir_kern_start = (vir_bytes) &_kern_vir_base;
-	cbi->bootstrap_start = (vir_bytes) &_kern_unpaged_start;
-	cbi->bootstrap_len = (vir_bytes) &_kern_unpaged_end -
-		cbi->bootstrap_start;
+	//cbi->bootstrap_start = (vir_bytes) &_kern_unpaged_start;
+	cbi->bootstrap_len = (vir_bytes) 0;
 	cbi->kmess = &kmess;
 
 	/* set some configurable defaults */
@@ -373,23 +364,22 @@ void set_machine_id(char *cmdline)
 
 kinfo_t *pre_init(int argc, char **argv)
 {
-	char *bootargs;
+	char *bootargs = "console=tty00 rootdevname=c0d0p1 verbose=0 hz=1000 board_name=A335BNLT";
 	/* This is the main "c" entry point into the kernel. It gets called
 	   from head.S */
 	   
 	/* Clear BSS */
 	memset(&_edata, 0, (u32_t)&_end - (u32_t)&_edata);
-        memset(&_kern_unpaged_edata, 0, (u32_t)&_kern_unpaged_end - (u32_t)&_kern_unpaged_edata);
 
 	/* we get called in a c like fashion where the first arg
          * is the program name (load address) and the rest are
 	 * arguments. by convention the second argument is the
 	 *  command line */
 	if (argc != 2) {
-		POORMANS_FAILURE_NOTIFICATION;
+	//	POORMANS_FAILURE_NOTIFICATION;
 	}
 
-	bootargs = argv[1];
+	//bootargs = argv[1];
 	set_machine_id(bootargs);
 	bsp_ser_init();
 	/* Get our own copy boot params pointed to by ebx.
@@ -397,30 +387,10 @@ kinfo_t *pre_init(int argc, char **argv)
 	 */
 	get_parameters(&kinfo, bootargs);
 
-	/* Make and load a pagetable that will map the kernel
-	 * to where it should be; but first a 1:1 mapping so
-	 * this code stays where it should be.
-	 */
 	dcache_clean(); /* clean the caches */
-	pg_clear();
-	pg_identity(&kinfo);
-	kinfo.freepde_start = pg_mapkernel();
-	pg_load();
-	vm_enable_paging();
+    find_exists_pagedir(); // Loading pagedir from ttbr0
+	vm_enable_paging(); // Re init MMU how we like
 
 	/* Done, return boot info so it can be passed to kmain(). */
 	return &kinfo;
 }
-
-/* pre_init gets executed at the memory location where the kernel was loaded by the boot loader.
- * at that stage we only have a minimum set of functionality present (all symbols gets renamed to
- * ensure this). The following methods are used in that context. Once we jump to kmain they are no
- * longer used and the "real" implementations are visible
- */
-void send_diag_sig(void) { }
-void minix_shutdown(int how) { arch_shutdown(how); }
-void busy_delay_ms(int x) { }
-int raise(int n) { panic("raise(%d)\n", n); }
-int kern_phys_map_ptr( phys_bytes base_address, vir_bytes io_size, int vm_flags,
-struct kern_phys_map * priv, vir_bytes ptr) { return -1; };
-struct machine machine; /* pre init stage machine */
